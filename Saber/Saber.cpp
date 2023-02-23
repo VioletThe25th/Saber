@@ -10,7 +10,8 @@
 #include "variablesGlobales.h"
 #include "structures.h"
 
-bool menu(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, bool*);
+bool menu(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, bool*, bool*);
+bool firstLevel(ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*);
 
 
 int main()
@@ -30,12 +31,11 @@ int main()
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_timer_event_source(timer));
 
-    // Creates images
+    // Creates images MENU
     ALLEGRO_BITMAP* backgroundImage = NULL;
     ALLEGRO_BITMAP* playButtonImage = NULL;
     ALLEGRO_BITMAP* quitButtonImage = NULL;
-
-    // Load assets
+    // Load assets MENU
     backgroundImage = al_load_bitmap("assets/background/menu_background.jpg");
     playButtonImage = al_load_bitmap("assets/buttons/jouerButton.png");
     quitButtonImage = al_load_bitmap("assets/buttons/quitButton.png");
@@ -44,12 +44,29 @@ int main()
     assert(playButtonImage != NULL);
     assert(quitButtonImage != NULL);
 
+    //  Creates images level 1
+    ALLEGRO_BITMAP* background_level1 = NULL;
+    //ALLEGRO_BITMAP* background_level2 = NULL;
+    ALLEGRO_BITMAP* background_level3 = NULL;
+    ALLEGRO_BITMAP* background_level4 = NULL;
+    // Load assets level 1
+    background_level1 = al_load_bitmap("assets/level1/background/background_level1.png");
+    //background_level2 = al_load_bitmap("assets/level1/background/background_level2.png");
+    background_level3 = al_load_bitmap("assets/level1/background/background_level3.png");
+    background_level4 = al_load_bitmap("assets/level1/background/background_level4.png");
+
+    assert(background_level1 != NULL);
+    //assert(background_level2 != NULL);
+    assert(background_level3 != NULL);
+    assert(background_level4 != NULL);
+
     ALLEGRO_EVENT event;
 
     int width = al_get_display_width(display);
     int heigth = al_get_display_height(display);
     bool gameLoop = true;
     bool isInMenu = true;
+    bool playButton = false;
 
     position mousePos;
     position characterPos;
@@ -60,10 +77,13 @@ int main()
         al_wait_for_event(queue, &event);
 
         if (event.type == ALLEGRO_EVENT_TIMER) {
-            printf("entering menu\n");
+            //printf("entering menu\n");
             if (isInMenu) {
-          
-                isInMenu = menu(&mousePos, backgroundImage, playButtonImage, quitButtonImage,&gameLoop);
+                isInMenu = menu(&mousePos, backgroundImage, playButtonImage, quitButtonImage,&gameLoop, &playButton);
+            }
+
+            if (playButton) {
+                playButton = firstLevel(background_level1, background_level3, background_level4);
             }
             // Refresh the screen
             al_flip_display();
@@ -90,7 +110,7 @@ int main()
     return 0;
 }
 
-bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* playButtonImage, ALLEGRO_BITMAP* quitButtonImage, bool* gameLoop) {
+bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* playButtonImage, ALLEGRO_BITMAP* quitButtonImage, bool* gameLoop, bool* playButton) {
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -121,7 +141,7 @@ bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* p
             al_wait_for_event(queue, &event);
 
             if (event.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-                *gameLoop = false;
+                *playButton = true;
                 printf("play\n");
                 return false;
             }
@@ -145,7 +165,20 @@ bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* p
     al_draw_bitmap(quitButtonImage, quitButtonPos.x, quitButtonPos.y, 0);
 
     al_destroy_event_queue(queue);
-   
+
+    return true;
+}
+
+bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_level3, ALLEGRO_BITMAP* background_level4) {
+
+
+
+
+    al_draw_scaled_bitmap(background_level1, 0, 0, al_get_bitmap_width(background_level1), al_get_bitmap_height(background_level1), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
+
+    al_draw_scaled_bitmap(background_level3, 0, 0, al_get_bitmap_width(background_level3), al_get_bitmap_height(background_level3), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
+    al_draw_scaled_bitmap(background_level4, 0, 0, al_get_bitmap_width(background_level4), al_get_bitmap_height(background_level4), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
+
     return true;
 }
 
