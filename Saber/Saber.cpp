@@ -6,9 +6,10 @@
 #include <allegro5/allegro_font.h>
 #include <iostream>
 #include <stdbool.h>
+#include "variablesGlobales.h"
 #include "structures.h"
 
-void menu(void);
+void menu(position*);
 
 
 int main()
@@ -17,7 +18,7 @@ int main()
     al_install_keyboard();
     al_install_mouse();
 
-    ALLEGRO_DISPLAY* display = al_create_display(1600, 900);
+    ALLEGRO_DISPLAY* display = al_create_display(LENGTH_SCREEN, HEIGHT_SCREEN);
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60.0);
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
     ALLEGRO_FONT* font = al_create_builtin_font();
@@ -33,7 +34,8 @@ int main()
     int heigth = al_get_display_height(display);
     bool gameLoop = true;
 
-    struct position mousePos;
+    position mousePos;
+    position characterPos;
 
     al_start_timer(timer);
     while (gameLoop)
@@ -43,7 +45,7 @@ int main()
 
         
         if (event.type == ALLEGRO_EVENT_TIMER) {
-            menu();
+            menu(&mousePos);
             // Refresh the screen
             al_flip_display();
         }
@@ -65,7 +67,7 @@ int main()
     return 0;
 }
 
-void menu() {
+void menu(position* mousePos) {
     ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
 
     al_register_event_source(queue, al_get_keyboard_event_source());
@@ -76,7 +78,10 @@ void menu() {
     al_wait_for_event(queue, &event);
 
     if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
-        mousePos.x = event.mouse.x;
+        mousePos->x = event.mouse.x;
+        mousePos->y = event.mouse.y;
+
+
     }
 }
 
