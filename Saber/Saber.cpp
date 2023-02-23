@@ -6,11 +6,16 @@
 #include <allegro5/allegro_font.h>
 #include <iostream>
 #include <stdbool.h>
+#include "structures.h"
+
+void menu(void);
+
 
 int main()
 {
     al_init();
     al_install_keyboard();
+    al_install_mouse();
 
     ALLEGRO_DISPLAY* display = al_create_display(1600, 900);
     ALLEGRO_TIMER* timer = al_create_timer(1.0 / 60.0);
@@ -18,6 +23,7 @@ int main()
     ALLEGRO_FONT* font = al_create_builtin_font();
 
     al_register_event_source(queue, al_get_keyboard_event_source());
+    al_register_event_source(queue, al_get_mouse_event_source());
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_timer_event_source(timer));
 
@@ -25,29 +31,53 @@ int main()
 
     int width = al_get_display_width(display);
     int heigth = al_get_display_height(display);
+    bool gameLoop = true;
+
+    struct position mousePos;
 
     al_start_timer(timer);
-    while (1)
+    while (gameLoop)
     {
         al_wait_for_event(queue, &event);
 
 
-        // Refresh the screen
-        if (event.type == ALLEGRO_EVENT_TIMER)
+        
+        if (event.type == ALLEGRO_EVENT_TIMER) {
+            menu();
+            // Refresh the screen
             al_flip_display();
+        }
+
 
         // Close the window if a key is pressed or if the close button is clicked on
-        else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE))
-            break;
-
+        else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)) {
+            gameLoop = false;
+        }
     }
 
     al_destroy_font(font);
     al_destroy_display(display);
     al_destroy_timer(timer);
     al_destroy_event_queue(queue);
+    al_uninstall_keyboard();
+    al_uninstall_mouse();
 
     return 0;
+}
+
+void menu() {
+    ALLEGRO_EVENT_QUEUE* queue = al_create_event_queue();
+
+    al_register_event_source(queue, al_get_keyboard_event_source());
+    al_register_event_source(queue, al_get_mouse_event_source());
+
+    ALLEGRO_EVENT event;
+
+    al_wait_for_event(queue, &event);
+
+    if (event.type == ALLEGRO_EVENT_MOUSE_AXES) {
+        mousePos.x = event.mouse.x;
+    }
 }
 
 

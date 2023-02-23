@@ -141,6 +141,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Saber.cpp" />
+    <ClCompile Include="structures.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
