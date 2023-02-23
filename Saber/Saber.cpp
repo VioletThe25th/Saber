@@ -1,5 +1,6 @@
 // Saber.cpp : Ce fichier contient la fonction 'main'. L'exécution du programme commence et se termine à cet endroit.
 //
+// faire caca sur le trottoir c rigolo mais c pas bo
 
 #include <allegro5/allegro5.h>
 #include <allegro5/allegro_font.h>
