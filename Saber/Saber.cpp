@@ -11,7 +11,7 @@
 #include "structures.h"
 
 bool menu(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, bool*, bool*);
-bool firstLevel(ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*);
+bool firstLevel(ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_TIMER*, ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, const int, int, int, int, ALLEGRO_BITMAP* []);
 
 
 int main()
@@ -31,6 +31,18 @@ int main()
     al_register_event_source(queue, al_get_display_event_source(display));
     al_register_event_source(queue, al_get_timer_event_source(timer));
 
+    ALLEGRO_EVENT event;
+
+    int width = al_get_display_width(display);
+    int heigth = al_get_display_height(display);
+    bool gameLoop = true;
+    bool isInMenu = true;
+    bool playButton = false;
+    const int characterMaxFrame = 3;
+    int characterCurrFrame = 0;
+    int frameCount = 0;
+    int frameDelay = 20;
+
     // Creates images MENU
     ALLEGRO_BITMAP* backgroundImage = NULL;
     ALLEGRO_BITMAP* playButtonImage = NULL;
@@ -46,27 +58,26 @@ int main()
 
     //  Creates images level 1
     ALLEGRO_BITMAP* background_level1 = NULL;
-    //ALLEGRO_BITMAP* background_level2 = NULL;
+    ALLEGRO_BITMAP* background_level2 = NULL;
     ALLEGRO_BITMAP* background_level3 = NULL;
     ALLEGRO_BITMAP* background_level4 = NULL;
     // Load assets level 1
     background_level1 = al_load_bitmap("assets/level1/background/background_level1.png");
-    //background_level2 = al_load_bitmap("assets/level1/background/background_level2.png");
+    background_level2 = al_load_bitmap("assets/level1/background/background_level2.png");
     background_level3 = al_load_bitmap("assets/level1/background/background_level3.png");
     background_level4 = al_load_bitmap("assets/level1/background/background_level4.png");
 
     assert(background_level1 != NULL);
-    //assert(background_level2 != NULL);
+    assert(background_level2 != NULL);
     assert(background_level3 != NULL);
     assert(background_level4 != NULL);
 
-    ALLEGRO_EVENT event;
-
-    int width = al_get_display_width(display);
-    int heigth = al_get_display_height(display);
-    bool gameLoop = true;
-    bool isInMenu = true;
-    bool playButton = false;
+    // Creates images character
+    ALLEGRO_BITMAP* characterNMoving[characterMaxFrame] = { NULL, NULL, NULL };
+    // Load assets character
+    characterNMoving[0] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving1.png");
+    characterNMoving[1] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving2.png");
+    characterNMoving[2] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving3.png");
 
     position mousePos;
     position characterPos;
@@ -83,7 +94,7 @@ int main()
             }
 
             if (playButton) {
-                playButton = firstLevel(background_level1, background_level3, background_level4);
+                playButton = firstLevel(background_level1, background_level2, background_level3, background_level4, timer, queue ,event, characterMaxFrame, characterCurrFrame, frameCount, frameDelay, characterNMoving);
             }
             // Refresh the screen
             al_flip_display();
@@ -91,7 +102,7 @@ int main()
         
 
         // Close the window if a key is pressed or if the close button is clicked on
-        else if ((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)) {
+        else if ((event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)) {
             gameLoop = false;
         }
 
@@ -106,6 +117,9 @@ int main()
     al_destroy_bitmap(backgroundImage);
     al_destroy_bitmap(playButtonImage);
     al_destroy_bitmap(quitButtonImage);
+    for (int i = 0; i < characterMaxFrame; i++) {
+        al_destroy_bitmap(characterNMoving[i]);
+    }
 
     return 0;
 }
@@ -169,15 +183,56 @@ bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* p
     return true;
 }
 
-bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_level3, ALLEGRO_BITMAP* background_level4) {
+bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_level2, ALLEGRO_BITMAP* background_level3, ALLEGRO_BITMAP* background_level4, 
+    ALLEGRO_TIMER* timer, ALLEGRO_EVENT_QUEUE* queue, ALLEGRO_EVENT event, const int characterMaxFrame, int characterCurrFrame, int frameCount, int frameDelay, ALLEGRO_BITMAP* characterNMoving[]) {
 
+    al_wait_for_event(queue, &event);
+    
+    al_start_timer(timer);
+    /*if (event.type == ALLEGRO_EVENT_TIMER) {
 
+        if (++frameCount >= frameDelay) {
+            
+            if (++characterCurrFrame >= characterMaxFrame) {
+                
+                characterCurrFrame = 0;
+            }
+            frameCount = 0;
+        }*/
 
+        //printf("frameCount = %d\n", frameCount);
+        //printf("timer");
+    if (event.type == ALLEGRO_EVENT_TIMER) {
+        for (int i = 0; i < ALLEGRO_EVENT_TIMER; i++) {
+            //printf("timer tick");
+            if (i <= 10) {
+                printf("1");
+                characterCurrFrame = 0;
+                //al_draw_bitmap(characterNMoving[0], 200, 600, 0);
+            }
+            else if (i > 10 && i < 20) {
+                printf("2");
+                characterCurrFrame = 1;
+                //al_draw_bitmap(characterNMoving[1], 200, 600, 0);
+            }
+            else if (i > 20) {
+                printf("3");
+                characterCurrFrame = 2;
+                //al_draw_bitmap(characterNMoving[2], 200, 600, 0);
+            }
+        }
+    }
+        
+    
 
     al_draw_scaled_bitmap(background_level1, 0, 0, al_get_bitmap_width(background_level1), al_get_bitmap_height(background_level1), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
-
+    al_draw_scaled_bitmap(background_level2, 0, 0, al_get_bitmap_width(background_level2), al_get_bitmap_height(background_level2), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
     al_draw_scaled_bitmap(background_level3, 0, 0, al_get_bitmap_width(background_level3), al_get_bitmap_height(background_level3), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
     al_draw_scaled_bitmap(background_level4, 0, 0, al_get_bitmap_width(background_level4), al_get_bitmap_height(background_level4), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
+
+    al_draw_bitmap(characterNMoving[characterCurrFrame], 200, 590, 0);
+    //al_flip_display();
+    /*characterCurrFrame = (characterCurrFrame + 1) % characterMaxFrame;*/
 
     return true;
 }
