@@ -11,8 +11,10 @@
 #include "structures.h"
 
 bool menu(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, bool*, bool*);
-bool firstLevel(ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_TIMER*, ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, int, ALLEGRO_BITMAP* []);
+bool firstLevel(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, 
+    ALLEGRO_TIMER*, ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, int, ALLEGRO_BITMAP* [], bool, bool);
 void globalAnimationHandler(int*, int*);
+void characterHandler(position*, ALLEGRO_BITMAP* [], bool, bool, int);
 
 int main()
 {
@@ -41,6 +43,8 @@ int main()
     int characterCurrFrame = 0;
     int frameCount = 0;
     bool levelOne = true;
+    bool moving = false;
+    bool facingRight = true;
 
     // Creates images MENU
     ALLEGRO_BITMAP* backgroundImage = NULL;
@@ -79,7 +83,7 @@ int main()
     characterNMoving[2] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving3.png");
 
     position mousePos;
-    position characterPos;
+    position characterPos = {200, 585};
 
     al_start_timer(timer);
     while (gameLoop)
@@ -87,24 +91,48 @@ int main()
         al_wait_for_event(queue, &event);
 
         //Commandes Keyboard
+
+
         if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-            if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+
+            switch (event.keyboard.keycode) {
+            case ALLEGRO_KEY_ESCAPE:
                 isInMenu = true;
+                break;
+
+            case ALLEGRO_KEY_Z:
+
+                break;
+            case ALLEGRO_KEY_Q:
+                facingRight = false;
+                moving = true;
+                break;
+            case ALLEGRO_KEY_D:
+                facingRight = true;
+                moving = true;
+                break;
+            }
+        }
+        else if (event.type == ALLEGRO_EVENT_KEY_UP) {
+            moving = false;
         }
 
         //Timer
         if (event.type == ALLEGRO_EVENT_TIMER) {
-            //printf("entering menu\n");
-
-            if (isInMenu) {
-                isInMenu = menu(&mousePos, backgroundImage, playButtonImage, quitButtonImage,&gameLoop, &playButton);
-            }
 
             if (levelOne && !isInMenu) {
-                levelOne = firstLevel(background_level1, background_level2, background_level3, background_level4, timer, queue ,event, characterCurrFrame, characterNMoving);
+                levelOne = firstLevel(&characterPos, background_level1, background_level2, background_level3, background_level4, 
+                    timer, queue ,event, characterCurrFrame, characterNMoving, facingRight, moving);
             }
 
-            globalAnimationHandler(&frameCount, &characterCurrFrame);
+            if (isInMenu) {
+                isInMenu = menu(&mousePos, backgroundImage, playButtonImage, quitButtonImage, &gameLoop, &playButton);
+            }
+            else {
+                globalAnimationHandler(&frameCount, &characterCurrFrame);
+                characterHandler(&characterPos, characterNMoving, moving, facingRight, characterCurrFrame);
+            }
+         
 
             // Refresh the screen
             al_flip_display();
@@ -193,34 +221,13 @@ bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* p
     return true;
 }
 
-bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_level2, ALLEGRO_BITMAP* background_level3, ALLEGRO_BITMAP* background_level4, 
-    ALLEGRO_TIMER* timer, ALLEGRO_EVENT_QUEUE* queue, ALLEGRO_EVENT event, int characterCurrFrame, ALLEGRO_BITMAP* characterNMoving[]) {
-
-    //al_wait_for_event(queue, &event);
-    /*if (event.type == ALLEGRO_EVENT_TIMER) {
-
-        if (++frameCount >= frameDelay) {
-            
-            if (++characterCurrFrame >= characterMaxFrame) {
-                
-                characterCurrFrame = 0;
-            }
-            frameCount = 0;
-        }*/
-
-        //printf("frameCount = %d\n", frameCount);
-        //printf("timer");
-        //printf("timer tick");
-    al_draw_bitmap(characterNMoving[characterCurrFrame], 200, 600, 0);
+bool firstLevel(position* characterPos, ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_level2, ALLEGRO_BITMAP* background_level3, ALLEGRO_BITMAP* background_level4, 
+    ALLEGRO_TIMER* timer, ALLEGRO_EVENT_QUEUE* queue, ALLEGRO_EVENT event, int characterCurrFrame, ALLEGRO_BITMAP* characterNMoving[], bool facingRight, bool moving) {
 
     al_draw_scaled_bitmap(background_level1, 0, 0, al_get_bitmap_width(background_level1), al_get_bitmap_height(background_level1), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
     al_draw_scaled_bitmap(background_level2, 0, 0, al_get_bitmap_width(background_level2), al_get_bitmap_height(background_level2), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
     al_draw_scaled_bitmap(background_level3, 0, 0, al_get_bitmap_width(background_level3), al_get_bitmap_height(background_level3), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
     al_draw_scaled_bitmap(background_level4, 0, 0, al_get_bitmap_width(background_level4), al_get_bitmap_height(background_level4), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
-
-    al_draw_bitmap(characterNMoving[characterCurrFrame], 200, 590, 0);
-    //al_flip_display();
-    /*characterCurrFrame = (characterCurrFrame + 1) % characterMaxFrame;*/
 
     return true;
 }
@@ -231,10 +238,30 @@ void globalAnimationHandler(int* frameCount, int* saberAnim) {
     if (*frameCount > 60) *frameCount = 0;
 
     //Saber
-    if (*frameCount%ANIMATION_SPEED == 0) *saberAnim+=1;
-    if (*saberAnim > 2) *saberAnim = 0;
+    if (*frameCount == ANIMATION_SPEED) *saberAnim = 1;
+    if (*frameCount == (ANIMATION_SPEED * 2)) *saberAnim = 2;
+    if (*frameCount == (ANIMATION_SPEED * 3)) *saberAnim = 0;
+}
 
-
+void characterHandler(position* characterPos, ALLEGRO_BITMAP* characterNMoving[], bool moving, bool facingRight, int characterCurrFrame) {
+    
+    
+    if (!moving) {
+        if (facingRight) al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, 0);
+        else al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, ALLEGRO_FLIP_HORIZONTAL);
+    }
+    else {
+        printf("dans le else");
+        if (facingRight) {
+            characterPos->x += 5;
+            al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, 0);
+        }
+        else {
+            characterPos->x -= 5;
+            al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, ALLEGRO_FLIP_HORIZONTAL);
+        }
+    }
+    //printf("Saber pos x : %f\n", characterPos->x);
 }
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
