@@ -2,3 +2,6 @@
 
 #define LENGTH_SCREEN 1600
 #define HEIGHT_SCREEN 900
+
+#define CHAR_MAX_FRAME 3
+#define ANIMATION_SPEED 20

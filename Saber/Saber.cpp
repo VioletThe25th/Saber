@@ -11,8 +11,8 @@
 #include "structures.h"
 
 bool menu(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, bool*, bool*);
-bool firstLevel(ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_TIMER*, ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, const int, int, int, int, ALLEGRO_BITMAP* []);
-
+bool firstLevel(ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_TIMER*, ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, int, ALLEGRO_BITMAP* []);
+void globalAnimationHandler(int*, int*);
 
 int main()
 {
@@ -38,10 +38,9 @@ int main()
     bool gameLoop = true;
     bool isInMenu = true;
     bool playButton = false;
-    const int characterMaxFrame = 3;
     int characterCurrFrame = 0;
     int frameCount = 0;
-    int frameDelay = 20;
+    bool levelOne = true;
 
     // Creates images MENU
     ALLEGRO_BITMAP* backgroundImage = NULL;
@@ -73,7 +72,7 @@ int main()
     assert(background_level4 != NULL);
 
     // Creates images character
-    ALLEGRO_BITMAP* characterNMoving[characterMaxFrame] = { NULL, NULL, NULL };
+    ALLEGRO_BITMAP* characterNMoving[CHAR_MAX_FRAME] = { NULL, NULL, NULL };
     // Load assets character
     characterNMoving[0] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving1.png");
     characterNMoving[1] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving2.png");
@@ -87,15 +86,26 @@ int main()
     {
         al_wait_for_event(queue, &event);
 
+        //Commandes Keyboard
+        if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+            if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE)
+                isInMenu = true;
+        }
+
+        //Timer
         if (event.type == ALLEGRO_EVENT_TIMER) {
             //printf("entering menu\n");
+
             if (isInMenu) {
                 isInMenu = menu(&mousePos, backgroundImage, playButtonImage, quitButtonImage,&gameLoop, &playButton);
             }
 
-            if (playButton) {
-                playButton = firstLevel(background_level1, background_level2, background_level3, background_level4, timer, queue ,event, characterMaxFrame, characterCurrFrame, frameCount, frameDelay, characterNMoving);
+            if (levelOne && !isInMenu) {
+                levelOne = firstLevel(background_level1, background_level2, background_level3, background_level4, timer, queue ,event, characterCurrFrame, characterNMoving);
             }
+
+            globalAnimationHandler(&frameCount, &characterCurrFrame);
+
             // Refresh the screen
             al_flip_display();
         }
@@ -117,7 +127,7 @@ int main()
     al_destroy_bitmap(backgroundImage);
     al_destroy_bitmap(playButtonImage);
     al_destroy_bitmap(quitButtonImage);
-    for (int i = 0; i < characterMaxFrame; i++) {
+    for (int i = 0; i < CHAR_MAX_FRAME; i++) {
         al_destroy_bitmap(characterNMoving[i]);
     }
 
@@ -184,11 +194,9 @@ bool menu(position* mousePos, ALLEGRO_BITMAP* backgroundImage, ALLEGRO_BITMAP* p
 }
 
 bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_level2, ALLEGRO_BITMAP* background_level3, ALLEGRO_BITMAP* background_level4, 
-    ALLEGRO_TIMER* timer, ALLEGRO_EVENT_QUEUE* queue, ALLEGRO_EVENT event, const int characterMaxFrame, int characterCurrFrame, int frameCount, int frameDelay, ALLEGRO_BITMAP* characterNMoving[]) {
+    ALLEGRO_TIMER* timer, ALLEGRO_EVENT_QUEUE* queue, ALLEGRO_EVENT event, int characterCurrFrame, ALLEGRO_BITMAP* characterNMoving[]) {
 
-    al_wait_for_event(queue, &event);
-    
-    al_start_timer(timer);
+    //al_wait_for_event(queue, &event);
     /*if (event.type == ALLEGRO_EVENT_TIMER) {
 
         if (++frameCount >= frameDelay) {
@@ -202,28 +210,8 @@ bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_le
 
         //printf("frameCount = %d\n", frameCount);
         //printf("timer");
-    if (event.type == ALLEGRO_EVENT_TIMER) {
-        for (int i = 0; i < ALLEGRO_EVENT_TIMER; i++) {
-            //printf("timer tick");
-            if (i <= 10) {
-                printf("1");
-                characterCurrFrame = 0;
-                //al_draw_bitmap(characterNMoving[0], 200, 600, 0);
-            }
-            else if (i > 10 && i < 20) {
-                printf("2");
-                characterCurrFrame = 1;
-                //al_draw_bitmap(characterNMoving[1], 200, 600, 0);
-            }
-            else if (i > 20) {
-                printf("3");
-                characterCurrFrame = 2;
-                //al_draw_bitmap(characterNMoving[2], 200, 600, 0);
-            }
-        }
-    }
-        
-    
+        //printf("timer tick");
+    al_draw_bitmap(characterNMoving[characterCurrFrame], 200, 600, 0);
 
     al_draw_scaled_bitmap(background_level1, 0, 0, al_get_bitmap_width(background_level1), al_get_bitmap_height(background_level1), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
     al_draw_scaled_bitmap(background_level2, 0, 0, al_get_bitmap_width(background_level2), al_get_bitmap_height(background_level2), 0, 0, LENGTH_SCREEN, HEIGHT_SCREEN, 0);
@@ -237,6 +225,17 @@ bool firstLevel(ALLEGRO_BITMAP* background_level1, ALLEGRO_BITMAP* background_le
     return true;
 }
 
+void globalAnimationHandler(int* frameCount, int* saberAnim) {
+
+    *frameCount+=1;
+    if (*frameCount > 60) *frameCount = 0;
+
+    //Saber
+    if (*frameCount%ANIMATION_SPEED == 0) *saberAnim+=1;
+    if (*saberAnim > 2) *saberAnim = 0;
+
+
+}
 
 // Exécuter le programme : Ctrl+F5 ou menu Déboguer > Exécuter sans débogage
 // Déboguer le programme : F5 ou menu Déboguer > Démarrer le débogage
