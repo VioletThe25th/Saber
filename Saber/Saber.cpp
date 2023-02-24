@@ -111,14 +111,23 @@ int main()
                 facingRight = true;
                 moving = true;
                 break;
-            default :
-                moving = false;
-                break;
             }
         }
-        /*else {
-            moving = false;
-        }*/
+        else if (event.type == ALLEGRO_EVENT_KEY_UP) {
+            switch (event.keyboard.keycode) {
+                /*case ALLEGRO_KEY_Z:
+                    moving = true;
+                    break;*/
+                case ALLEGRO_KEY_Q:
+                    if (facingRight) moving = true;
+                    else moving = false;
+                    break;
+                case ALLEGRO_KEY_D:
+                    if (!facingRight) moving = true;
+                    else moving = false;
+                    break;
+            }
+        }
 
         //Timer
         if (event.type == ALLEGRO_EVENT_TIMER) {
@@ -136,7 +145,7 @@ int main()
                 characterHandler(&characterPos, characterNMoving, moving, facingRight, characterCurrFrame);
             }
          
-
+            //printf("moving ? %d\n", moving);
             // Refresh the screen
             al_flip_display();
         }
