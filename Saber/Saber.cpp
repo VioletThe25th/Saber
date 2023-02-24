@@ -111,11 +111,14 @@ int main()
                 facingRight = true;
                 moving = true;
                 break;
+            default :
+                moving = false;
+                break;
             }
         }
-        else if (event.type == ALLEGRO_EVENT_KEY_UP) {
+        /*else {
             moving = false;
-        }
+        }*/
 
         //Timer
         if (event.type == ALLEGRO_EVENT_TIMER) {
@@ -251,7 +254,7 @@ void characterHandler(position* characterPos, ALLEGRO_BITMAP* characterNMoving[]
         else al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, ALLEGRO_FLIP_HORIZONTAL);
     }
     else {
-        printf("dans le else");
+        //printf("dans le else");
         if (facingRight) {
             characterPos->x += 5;
             al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, 0);
