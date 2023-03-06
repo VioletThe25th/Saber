@@ -14,7 +14,7 @@ bool menu(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, bool*, b
 bool firstLevel(position*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, ALLEGRO_BITMAP*, 
     ALLEGRO_TIMER*, ALLEGRO_EVENT_QUEUE*, ALLEGRO_EVENT, int, ALLEGRO_BITMAP* [], bool, bool);
 void globalAnimationHandler(int*, int*);
-void characterHandler(position*, ALLEGRO_BITMAP* [], bool, bool, int);
+void characterHandler(position*, ALLEGRO_BITMAP* [], ALLEGRO_BITMAP* [], bool, bool, int, bool, bool);
 
 int main()
 {
@@ -45,6 +45,8 @@ int main()
     bool levelOne = true;
     bool moving = false;
     bool facingRight = true;
+    bool jumping = false;
+    bool dashing = false;
 
     // Creates images MENU
     ALLEGRO_BITMAP* backgroundImage = NULL;
@@ -74,16 +76,26 @@ int main()
     assert(background_level2 != NULL);
     assert(background_level3 != NULL);
     assert(background_level4 != NULL);
-
+    
     // Creates images character
-    ALLEGRO_BITMAP* characterNMoving[CHAR_MAX_FRAME] = { NULL, NULL, NULL };
+    ALLEGRO_BITMAP* characterNMoving[CHAR_MAX_FRAME] = { NULL, NULL, NULL, NULL, NULL };
+    ALLEGRO_BITMAP* characterRunning[CHAR_MAX_FRAME] = { NULL, NULL, NULL, NULL, NULL};
     // Load assets character
-    characterNMoving[0] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving1.png");
-    characterNMoving[1] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving2.png");
-    characterNMoving[2] = al_load_bitmap("assets/characters/SaberNmoving/SaberNMoving3.png");
+    characterNMoving[0] = al_load_bitmap("assets/characters/SaberNmoving/sabernmoving1.png");
+    characterNMoving[1] = al_load_bitmap("assets/characters/SaberNmoving/sabernmoving2.png");
+    characterNMoving[2] = al_load_bitmap("assets/characters/SaberNmoving/sabernmoving3.png");
+    characterNMoving[3] = al_load_bitmap("assets/characters/SaberNmoving/sabernmoving4.png");
+    characterNMoving[4] = al_load_bitmap("assets/characters/SaberNmoving/sabernmoving5.png");
+
+    characterRunning[0] = al_load_bitmap("assets/characters/SaberRunning/saberrunning1.png");
+    characterRunning[1] = al_load_bitmap("assets/characters/SaberRunning/saberrunning2.png");
+    characterRunning[2] = al_load_bitmap("assets/characters/SaberRunning/saberrunning3.png");
+    characterRunning[3] = al_load_bitmap("assets/characters/SaberRunning/saberrunning4.png");
+    characterRunning[4] = al_load_bitmap("assets/characters/SaberRunning/saberrunning5.png");
+
 
     position mousePos;
-    position characterPos = {200, 585};
+    position characterPos = {200, 650};
 
     al_start_timer(timer);
     while (gameLoop)
@@ -101,7 +113,7 @@ int main()
                 break;
 
             case ALLEGRO_KEY_Z:
-
+                jumping = true;
                 break;
             case ALLEGRO_KEY_Q:
                 facingRight = false;
@@ -110,6 +122,9 @@ int main()
             case ALLEGRO_KEY_D:
                 facingRight = true;
                 moving = true;
+                break;
+            case ALLEGRO_KEY_LSHIFT:
+                dashing = true;
                 break;
             }
         }
@@ -142,7 +157,7 @@ int main()
             }
             else {
                 globalAnimationHandler(&frameCount, &characterCurrFrame);
-                characterHandler(&characterPos, characterNMoving, moving, facingRight, characterCurrFrame);
+                characterHandler(&characterPos, characterNMoving, characterRunning, moving, facingRight, characterCurrFrame, dashing, jumping);
             }
          
             //printf("moving ? %d\n", moving);
@@ -169,6 +184,7 @@ int main()
     al_destroy_bitmap(quitButtonImage);
     for (int i = 0; i < CHAR_MAX_FRAME; i++) {
         al_destroy_bitmap(characterNMoving[i]);
+        al_destroy_bitmap(characterRunning[i]);
     }
 
     return 0;
@@ -252,25 +268,29 @@ void globalAnimationHandler(int* frameCount, int* saberAnim) {
     //Saber
     if (*frameCount == ANIMATION_SPEED) *saberAnim = 1;
     if (*frameCount == (ANIMATION_SPEED * 2)) *saberAnim = 2;
-    if (*frameCount == (ANIMATION_SPEED * 3)) *saberAnim = 0;
+    if (*frameCount == (ANIMATION_SPEED * 3)) *saberAnim = 3;
+    if (*frameCount == (ANIMATION_SPEED * 4)) *saberAnim = 4;
+    if (*frameCount == (ANIMATION_SPEED * 5)) *saberAnim = 0;
 }
 
-void characterHandler(position* characterPos, ALLEGRO_BITMAP* characterNMoving[], bool moving, bool facingRight, int characterCurrFrame) {
+void characterHandler(position* characterPos, ALLEGRO_BITMAP* characterNMoving[], ALLEGRO_BITMAP* characterRunning[], bool moving, bool facingRight, int characterCurrFrame, bool dashing, bool jumping) {
     
     
     if (!moving) {
-        if (facingRight) al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, 0);
+        if (facingRight) {
+            al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, 0);
+        }
         else al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, ALLEGRO_FLIP_HORIZONTAL);
     }
     else {
         //printf("dans le else");
         if (facingRight) {
             characterPos->x += 5;
-            al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, 0);
+            al_draw_bitmap(characterRunning[characterCurrFrame], characterPos->x, characterPos->y, 0);
         }
         else {
             characterPos->x -= 5;
-            al_draw_bitmap(characterNMoving[characterCurrFrame], characterPos->x, characterPos->y, ALLEGRO_FLIP_HORIZONTAL);
+            al_draw_bitmap(characterRunning[characterCurrFrame], characterPos->x, characterPos->y, ALLEGRO_FLIP_HORIZONTAL);
         }
     }
     //printf("Saber pos x : %f\n", characterPos->x);
